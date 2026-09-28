@@ -1,8 +1,8 @@
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
 
-from app.ai.model.my_model import ModelManage
-from app.ai.agent.memory.save.summary_memory import SummaryMemory
+from backend.ai.model.my_model import ModelManage
+from backend.ai.agent.memory.save.summary_memory import SummaryMemory
 """
 摘要智能体
 """

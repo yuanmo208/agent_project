@@ -1,9 +1,9 @@
-from app.ai.agent.multi_agent.state.exam_state import ExamState
-from app.ai.agent.multi_agent.node.intent_node import intent_node
-from app.ai.agent.multi_agent.node.question_node import question_node
-from app.ai.agent.multi_agent.node.manager_node import manager_node
-from app.ai.agent.multi_agent.node.answer_node import answer_node
-from app.ai.agent.multi_agent.node.evaluate_node import evaluate_node
+from backend.ai.agent.multi_agent.state.exam_state import ExamState
+from backend.ai.agent.multi_agent.node.intent_node import intent_node
+from backend.ai.agent.multi_agent.node.question_node import question_node
+from backend.ai.agent.multi_agent.node.manager_node import manager_node
+from backend.ai.agent.multi_agent.node.answer_node import answer_node
+from backend.ai.agent.multi_agent.node.evaluate_node import evaluate_node
 from langgraph.graph import StateGraph, START, END
 from langchain_core.messages import HumanMessage
 import asyncio
@@ -52,6 +52,7 @@ class ExamGraph:
                 yield messages.content
             else:
                 yield m
+
 
     # 画图
     def draw(self):

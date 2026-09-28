@@ -1,5 +1,5 @@
-from app.users.service import email_log_service
-from app.users.dao import account_dao
+from backend.users.service import email_log_service
+from backend.users.dao import account_dao
 
 
 def check_register(accountschema):

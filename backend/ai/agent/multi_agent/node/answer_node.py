@@ -1,6 +1,6 @@
 from langchain_core.messages import HumanMessage, AIMessage
 
-from app.ai.agent.multi_agent.state.exam_state import ExamState
+from backend.ai.agent.multi_agent.state.exam_state import ExamState
 
 """
 答题节点：收集用户答案，判断下一个节点 是去评价还是继续出题

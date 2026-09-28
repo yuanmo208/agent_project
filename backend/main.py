@@ -5,10 +5,10 @@ from contextlib import asynccontextmanager
 
 from langgraph.checkpoint.memory import InMemorySaver
 
-from app.ai.agent.multi_agent.graph.exam_graph import ExamGraph
-from app.chat.controller.chat_router import chat_router
-from app.users.controller.account_router import account_router
-from app.users.controller.email_router import email_router
+from backend.ai.agent.multi_agent.graph.exam_graph_agent import ExamGraphAgent
+from backend.chat.controller.chat_router import chat_router
+from backend.users.controller.account_router import account_router
+from backend.users.controller.email_router import email_router
 
 
 
@@ -16,7 +16,7 @@ from app.users.controller.email_router import email_router
 @asynccontextmanager
 async def get_model(app: FastAPI):
     memory = InMemorySaver()
-    app.state.exam_agent = ExamGraph(memory)
+    app.state.exam_agent = ExamGraphAgent(memory)
     print("智能体初始化成功")
     yield
     app.state.exam_agent = None

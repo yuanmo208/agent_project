@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from app.users.service import email_log_service, account_log_service
-from app.users.schema.account_schema import AccountSchema
+from backend.users.service import email_log_service, account_log_service
+from backend.users.schema.account_schema import AccountSchema
 # 创建子路由对象
 account_router = APIRouter()
 

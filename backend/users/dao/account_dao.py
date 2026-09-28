@@ -1,4 +1,4 @@
-from app.utils import mysql_util
+from backend.utils import mysql_util
 
 
 # 定义查询数据库邮箱的函数

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.users.service import email_log_service
+from backend.users.service import email_log_service
 
 # 创建子路由对象
 email_router = APIRouter()

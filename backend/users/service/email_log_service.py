@@ -1,10 +1,10 @@
-from app.ai.tools.mysql_tool import mysql_tool
+from backend.ai.tools.mysql_tool import mysql_tool
 
 import os
 import random
 import smtplib
 from email.mime.text import MIMEText
-from app.utils import redis_util
+from backend.utils import redis_util
 from dotenv import load_dotenv
 load_dotenv()
 

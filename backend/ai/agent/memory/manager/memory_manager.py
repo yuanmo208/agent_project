@@ -1,7 +1,7 @@
-from app.ai.agent.memory.retrieval.SummaryAgent import SummaryAgent
-from app.ai.agent.memory.manager.session_mananger import SessionManager
-from app.ai.agent.memory.retrieval.long_agent import LongAgent
-from app.ai.agent.memory.retrieval.profile_agent import ProfileAgent
+from backend.ai.agent.memory.retrieval.SummaryAgent import SummaryAgent
+from backend.ai.agent.memory.manager.session_mananger import SessionManager
+from backend.ai.agent.memory.retrieval.long_agent import LongAgent
+from backend.ai.agent.memory.retrieval.profile_agent import ProfileAgent
 
 """
 记忆管理器，管理记忆的更新

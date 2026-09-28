@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 from email.mime.text import MIMEText
 import smtplib
-from app.ai.tools.schema.send_email_schema import EmailParams
+from backend.ai.tools.schema.send_email_schema import EmailParams
 
 # 读取配置文件
 load_dotenv()

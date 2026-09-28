@@ -1,7 +1,7 @@
 from langchain_core.messages import HumanMessage, AIMessage
-from app.ai.model.my_model import ModelManage
-from app.ai.agent.multi_agent.state.exam_state import ExamState
-from app.ai.prompt.bulider_prompt import BuilderPromptYaml
+from backend.ai.model.my_model import ModelManage
+from backend.ai.agent.multi_agent.state.exam_state import ExamState
+from backend.ai.prompt.bulider_prompt import BuilderPromptYaml
 from langchain.agents import create_agent
 from langgraph.config import get_stream_writer
 from langchain.agents.middleware import ModelCallLimitMiddleware,SummarizationMiddleware

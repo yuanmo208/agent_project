@@ -1,5 +1,5 @@
 from langchain.tools import tool
-from app.ai.tools.schema.mysql_schema import MySQLSchema
+from backend.ai.tools.schema.mysql_schema import MySQLSchema
 from dotenv import load_dotenv
 import os
 import pymysql

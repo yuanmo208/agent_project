@@ -1,20 +1,22 @@
 import contextlib
 import json
 
-from app.ai.agent.multi_agent.state.exam_state import ExamState
-from app.ai.agent.multi_agent.node.intent_node import intent_node
-from app.ai.agent.multi_agent.node.question_node import question_node
-from app.ai.agent.multi_agent.node.manager_node import manager_node
-from app.ai.agent.multi_agent.node.answer_node import answer_node
-from app.ai.agent.multi_agent.node.evaluate_node import evaluate_node
-from app.ai.agent.multi_agent.node.chat_node import chat_node
+from backend.ai.agent.multi_agent.state.exam_state import ExamState
+from backend.ai.agent.multi_agent.node.intent_node import intent_node
+from backend.ai.agent.multi_agent.node.question_node import question_node
+from backend.ai.agent.multi_agent.node.manager_node import manager_node
+from backend.ai.agent.multi_agent.node.answer_node import answer_node
+from backend.ai.agent.multi_agent.node.evaluate_node import evaluate_node
+from backend.ai.agent.multi_agent.node.chat_node import chat_node
 from langgraph.graph import StateGraph, START
 from langchain_core.messages import HumanMessage
 import asyncio
 import uuid
 import time
-from app.ai.agent.memory.manager.session_mananger import SessionManager
-from app.ai.agent.memory.manager.memory_manager import MemoryManager
+from backend.ai.agent.memory.manager.session_mananger import SessionManager
+from backend.ai.agent.memory.manager.memory_manager import MemoryManager
+from backend.utils import redis_util
+
 
 """
 模拟面试智能体，有并发场景
@@ -23,10 +25,10 @@ from app.ai.agent.memory.manager.memory_manager import MemoryManager
 
 class ExamGraphAgent:
 
-    def __init__(self, checkpoint, redis):
+    def __init__(self, checkpoint):
         self.memory = checkpoint
         # 获取redis实例
-        self.redis = redis
+        self.redis = redis_util.load_redis_conn()
         self.agent = self.get_agent()
 
     # 构建图

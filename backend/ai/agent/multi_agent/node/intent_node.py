@@ -1,7 +1,7 @@
-from app.ai.agent.multi_agent.schema.intent_schema import IntentSchema
-from app.ai.agent.multi_agent.state.exam_state import ExamState
-from app.ai.model.my_model import ModelManage
-from app.ai.prompt.bulider_prompt import BuilderPromptYaml
+from backend.ai.agent.multi_agent.schema.intent_schema import IntentSchema
+from backend.ai.agent.multi_agent.state.exam_state import ExamState
+from backend.ai.model.my_model import ModelManage
+from backend.ai.prompt.bulider_prompt import BuilderPromptYaml
 
 from langchain.agents import create_agent
 from langchain_core.messages import AIMessage

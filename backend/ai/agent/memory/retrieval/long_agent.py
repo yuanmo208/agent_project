@@ -1,8 +1,8 @@
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
 
-from app.ai.model.my_model import ModelManage
-from app.ai.agent.memory.save.long_memory import LongMemory
+from backend.ai.model.my_model import ModelManage
+from backend.ai.agent.memory.save.long_memory import LongMemory
 
 """
 长期记忆智能体

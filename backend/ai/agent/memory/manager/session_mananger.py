@@ -1,8 +1,8 @@
-from app.ai.agent.memory.save.window_memory import WindowMemory
-from app.ai.agent.memory.save.summary_memory import SummaryMemory
-from app.ai.agent.memory.manager.prompt_builder import PromptBuilder
-from app.ai.agent.memory.save.long_memory import LongMemory
-from app.ai.agent.memory.save.profile_memory import ProfileMemory
+from backend.ai.agent.memory.save.window_memory import WindowMemory
+from backend.ai.agent.memory.save.summary_memory import SummaryMemory
+from backend.ai.agent.memory.manager.prompt_builder import PromptBuilder
+from backend.ai.agent.memory.save.long_memory import LongMemory
+from backend.ai.agent.memory.save.profile_memory import ProfileMemory
 """
  会话管理器:主要负责四层记忆的对象创建和提示词的生成
 """

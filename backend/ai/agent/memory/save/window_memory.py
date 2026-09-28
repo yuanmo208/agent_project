@@ -1,7 +1,7 @@
 import json
 from dotenv import load_dotenv
 import os
-from app.utils import redis_util
+from backend.utils import redis_util
 
 load_dotenv()
 """

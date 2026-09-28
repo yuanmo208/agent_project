@@ -1,27 +1,22 @@
 import json
-
 from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
+
+from backend.chat.schema.chat_schema import ChatSchema
+from backend.chat.service import chat_service
 
 chat_router = APIRouter()
 
 
 @chat_router.get("/chat")
-async def chat(request: Request, question: str, user_id: str):
-    print(f"用户问题:{question},用户ID:{user_id}")
+async def chat(request: Request, chatschema: ChatSchema):
+    # 取出用户问题
+    question = chatschema.question
+    # 取出用户ID
+    user_id = chatschema.user_id
+    # 取出会话ID
+    session_id = chatschema.session_id
+    print(f"用户问题:{question},用户ID:{user_id},会话ID:{session_id}")
+    # 获取考试智能体
     exam_agent = request.app.state.exam_agent
-    # 定义一个异步迭代七
-    async def generate(question, user_id, session_id):
-        try:
-            async for x in exam_agent.chat(question, user_id,"001"):
-                # False 流式未结束
-                data = {"data": x, "done": False}
-                yield f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
-            # 流式结束
-            data = {"data": "", "done": True}
-            yield f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
-        except Exception as e:
-            # 流式结束
-            data = {"data": f"流式异常{e}", "done": True}
-            yield f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
-    return StreamingResponse(generate(question, user_id, "001"), media_type="text/event-stream")
+    return chat_service.chat_service(exam_agent, question, user_id, session_id)
