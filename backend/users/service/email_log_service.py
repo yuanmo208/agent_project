@@ -58,13 +58,9 @@ def send_email(email):
         # 发送成功退出
         smtp.quit()
         # 加载redis对象
-        r = redis_util.load_redis_conn()
-        print(1)
+        r = redis_util.get_redis_conn()
         # 把验证码存入redis定时消除
         r.set(email, code, ex=60)
-        # 关闭连接
-        redis_util.close_redis_conn(r)
-        print(2)
         return {
             "code": 200,
             "msg": "验证码已发送",
@@ -81,21 +77,20 @@ def send_email(email):
 # 验证验证码函数
 def check_code(email, code):
     # 从redis中获取验证码
-    r = redis_util.load_redis_conn()
+    r = redis_util.get_redis_conn()
+    redis_code = r.get(email)
     # 判断验证码是否存在
-    if r.get(email) is None:
+    if redis_code is None:
         return {
             "code": 501,
             "msg": "验证码已过期",
             "data": False,
         }
     else:
-        redis_code = str(r.get(email), 'utf-8')
         print(redis_code)
-        # 关闭连接
-        redis_util.close_redis_conn(r)
         # 验证验证码
         if redis_code == code:
+            r.delete(email)
             return {
                 "code": 200,
                 "msg": "验证码正确",

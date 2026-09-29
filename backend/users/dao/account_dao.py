@@ -1,10 +1,10 @@
-from backend.utils import mysql_util
+from backend.utils.mysql_util import MySQLManage
 
 
 # 定义查询数据库邮箱的函数
 def query_mysql_email(email):
     # 加载数据库连接
-    conn = mysql_util.load_mysql_conn()
+    conn = MySQLManage.get_mysql_conn()
     # 获取游标对象
     cursor = conn.cursor()
     # 编写SQL查询语句
@@ -13,8 +13,8 @@ def query_mysql_email(email):
     cursor.execute(sql, [email])
     # 获取查询结果
     result = cursor.fetchall()
-    # 关闭游标对象和数据库连接
-    mysql_util.close_mysql_conn(cursor, conn)
+    # 关闭游标对象和返回数据库连接
+    MySQLManage.close_mysql_conn(cursor, conn)
     # 返回查询结果
     return result
 
@@ -28,7 +28,7 @@ def insert_mysql_email(email, password):
         操作失败---rollback 回滚事务： 不执行当前操作
 
     """
-    conn = mysql_util.load_mysql_conn()
+    conn = MySQLManage.get_mysql_conn()
     cur = conn.cursor()
     try:
         sql = "UPDATE users SET password = %s WHERE email = %s;"
@@ -41,4 +41,4 @@ def insert_mysql_email(email, password):
         conn.rollback()
         return False
     finally:
-        mysql_util.close_mysql_conn(cur, conn)
+        MySQLManage.close_mysql_conn(cur, conn)
