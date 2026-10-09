@@ -7,16 +7,20 @@ def query_mysql_email(email):
     conn = MySQLManage.get_mysql_conn()
     # 获取游标对象
     cursor = conn.cursor()
-    # 编写SQL查询语句
-    sql = "SELECT * FROM users WHERE email = %s"
-    # 执行SQL查询语句
-    cursor.execute(sql, [email])
-    # 获取查询结果
-    result = cursor.fetchall()
-    # 关闭游标对象和返回数据库连接
-    MySQLManage.close_mysql_conn(cursor, conn)
-    # 返回查询结果
-    return result
+    try:
+        # 编写SQL查询语句
+        sql = "SELECT * FROM users WHERE email = %s"
+        # 执行SQL查询语句
+        cursor.execute(sql, [email])
+        # 获取查询结果
+        result = cursor.fetchall()
+        # 返回查询结果
+        return result
+    except Exception as e:
+        print(f"查询邮箱失败:{e}")
+    finally:
+        # 关闭游标对象和返回数据库连接
+        MySQLManage.close_mysql_conn(cursor, conn)
 
 
 def insert_mysql_email(email, password):

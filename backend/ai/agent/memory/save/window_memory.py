@@ -8,8 +8,9 @@ load_dotenv()
 """
 短期记忆-窗口记忆
 """
-class WindowMemory:
 
+
+class WindowMemory:
     def __init__(self, session_id):
         self.redis = redis_util.get_redis_conn()
         # 限制窗口记忆次数，生成环境是40次

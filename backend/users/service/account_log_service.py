@@ -2,6 +2,7 @@ from backend.users.service import email_log_service
 from backend.users.dao import account_dao
 
 
+# 邮箱验证码登录
 def check_register(accountschema):
     # 取出邮箱号和验证码
     email = accountschema.email

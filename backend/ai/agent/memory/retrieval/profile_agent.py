@@ -7,15 +7,18 @@ from pydantic import BaseModel,Field
 import ast
 
 class ProfileParams(BaseModel):
-    name:str = Field( description="姓名")
+    name: str = Field(description="姓名")
     age: int = Field(description="年龄")
-    job: str = Field( description="职业")
-    address: str = Field( description="地址")
-    xueli: str = Field( description="学历")
+    job: str = Field(description="职业")
+    address: str = Field(description="地址")
+    xueli: str = Field(description="学历")
+
 
 """
 用户画像智能体
 """
+
+
 class ProfileAgent:
 
     def __init__(self, profile_memory: ProfileMemory):
