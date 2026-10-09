@@ -41,8 +41,8 @@ def password_login(email, password):
     # 获取数据库信息
     result = account_dao.query_mysql_email(email)
     try:
-        username = result[0]['username']
-        if result[0]['password'] == password:
+        username = result[0][1]
+        if result[0][4] == password:
             return {
                 "code": 200,
                 "msg": "登录成功",

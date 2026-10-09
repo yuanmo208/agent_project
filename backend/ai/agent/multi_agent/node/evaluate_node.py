@@ -37,5 +37,5 @@ async def evaluate_node(state: ExamState):
             result.append(c.content)
             write(c.content)
 
-    ai_msg = ""
-    return {"messages": [AIMessage(content=ai_msg)], "exam_step": "done"}
+    # 内容已通过 write 写入 custom 流，不再返回 messages 避免重复
+    return {"exam_step": "done"}

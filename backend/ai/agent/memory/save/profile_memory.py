@@ -1,4 +1,5 @@
-import redis
+import asyncio
+from backend.utils import redis_util
 
 """
 用户画像记忆存储
@@ -6,30 +7,34 @@ import redis
 class ProfileMemory:
 
     def __init__(self, user_id):
-        self.redis = redis.StrictRedis(host="localhost", port=6379, db=0)
+        # 复用全局连接池（带密码 + decode_responses=True，避免 Authentication required）
+        self.redis = redis_util.get_redis_conn()
         self.key = f"profile:{user_id}"
 
     # 保存
-    def save(self, hashkey, value):
-        self.redis.hset(self.key, hashkey, value)
+    async def save(self, hashkey, value):
+        await asyncio.to_thread(self.redis.hset, self.key, hashkey, str(value))
 
-    # 查询
-    def query(self):
-        # 查询某个用户的用户画像
+    # 同步执行查询逻辑（放到线程中执行，避免阻塞事件循环）
+    def _query_sync(self):
+        # 查询某个用户的用户画像（decode_responses=True 已自动转 str）
         rs = self.redis.hgetall(self.key)
         data = ""
         if rs:
-            for hashkey,value in rs.items():
-                data += f"{hashkey.decode()}:{self.redis.hget(self.key,hashkey).decode()}\n"
+            for hashkey, value in rs.items():
+                data += f"{hashkey}:{value}\n"
         return data
+
+    # 查询
+    async def query(self):
+        return await asyncio.to_thread(self._query_sync)
+
 if __name__ =="__main__":
-   p = ProfileMemory(1)
-   p.save("name","张三")
-   p.save("age",23)
-   #查询
-   p.query()
+    async def _test():
+        p = ProfileMemory(1)
+        await p.save("name", "张三")
+        await p.save("age", 23)
+        # 查询
+        print(await p.query())
 
-
-
-
-
+    asyncio.run(_test())

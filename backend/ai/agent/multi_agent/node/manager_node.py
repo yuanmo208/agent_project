@@ -27,8 +27,13 @@ def manager_node(state: ExamState):
         # 调用意图识别节点
         return Command(goto="intent")
     elif exam_state == "intent":
-        # 调用意图识别节点
-        return Command(goto="question")
+        # 根据意图识别结果路由：有课程+数量走出题，否则走闲聊
+        course = state.get("course", "")
+        total = state.get("total", 0) or 0
+        if course and total > 0:
+            return Command(goto="question")
+        else:
+            return Command(goto="chat")
     elif exam_state == "question":
         if user_input == "":
             print("等待用户输入答案")

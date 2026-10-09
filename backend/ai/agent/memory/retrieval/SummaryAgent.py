@@ -34,16 +34,16 @@ class SummaryAgent:
             model = self.model,
             system_prompt=self.prompt,
             tools=[],
-            debug=True
+            debug=True,
 
         )
         return self.agent
 
     #记忆更新
     #messages 窗口记忆的消息
-    def update(self,messages):
+    async def update(self,messages):
         #查询旧摘要
-        old_summary_memory = self.summary_memory.query()
+        old_summary_memory = await self.summary_memory.query()
         #最新聊天记录
         prompt = ""
         for i in messages:
@@ -52,9 +52,12 @@ class SummaryAgent:
 
         question=f"旧摘要:{old_summary_memory}和最新聊天记录:{prompt}"
         #提问
-        rs = self.agent.invoke({"messages":[HumanMessage(content=question)]})
+        rs = await self.agent.ainvoke(
+            {"messages":[HumanMessage(content=question)]},
+            config={"recursion_limit": 5}
+        )
         #把新摘要存入到摘要记忆中
-        self.summary_memory.save(rs["messages"][-1].content)
+        await self.summary_memory.save(rs["messages"][-1].content)
 if __name__ =="__main__":
     summary_memory = SummaryMemory("001")
     s = SummaryAgent(summary_memory)

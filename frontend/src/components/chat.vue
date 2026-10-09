@@ -122,7 +122,7 @@
               <!-- 用户消息 -->
               <template v-if="msg.role === 'user'">
                 <div class="message-bubble user-bubble">
-                  <span v-html="$renderMarkdown(msg.content)"></span>
+                  <span v-html="renderMarkdown(msg.content)"></span>
                 </div>
                 <el-avatar :size="34" class="message-avatar">
                   {{ username.charAt(0).toUpperCase() || 'U' }}
@@ -135,7 +135,7 @@
                   <el-icon><Monitor /></el-icon>
                 </el-avatar>
                 <div class="message-bubble ai-bubble">
-                  <span v-html="$renderMarkdown(msg.content)"></span>
+                  <span v-html="renderMarkdown(msg.content)"></span>
                 </div>
               </template>
             </div>
@@ -176,9 +176,18 @@
 import { ref, onMounted, getCurrentInstance } from "vue";
 import {Plus, Delete, ChatDotRound, MoreFilled, Monitor, Promotion, Search} from "@element-plus/icons-vue";
 import {ElMessage} from "element-plus";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 
 // 创建代理对象
 let proxy = getCurrentInstance().proxy;
+
+// Markdown 渲染（局部定义，避免 globalProperties 挂载时序问题导致 template 取不到）
+marked.setOptions({ breaks: true, gfm: true, smartLists: true });
+function renderMarkdown(text) {
+  if (!text) return "";
+  return DOMPurify.sanitize(marked.parse(text));
+}
 
 // 搜索的关键词
 let searchKeyword = ref("");
@@ -188,6 +197,8 @@ let username = ref("");
 let question = ref("");
 let sendDisabled = ref(false);
 let currentChatId = ref(0);
+// 后端会话ID（由后端 /chat/create_session 返回，区别于历史记录 currentChatId）
+let sessionId = ref("");
 
 // 历史记录栏位
 let historyList = ref();
@@ -208,7 +219,7 @@ function historyListMenu() {
 }
 
 // ==================== 聊天对话功能 ====================
-function chat() {
+async function chat() {
   let myQuestion = question.value.trim();
   question.value = "";
 
@@ -219,16 +230,39 @@ function chat() {
   sendDisabled.value = true;
   messages.value.push({ role: "user", content: myQuestion });
   messages.value.push({ role: "assistant", content: "正在生成回复..." });
+
+  // 首次发送时先创建会话，拿到后端 session_id（区别于历史记录 currentChatId）
+  if (!sessionId.value) {
+    try {
+      let res = await proxy.$axios({
+        url: 'chat/create_session',
+        method: 'get',
+        params: { user_id: username.value }
+      });
+      sessionId.value = res.data.session_id;
+    } catch (e) {
+      ElMessage.error("创建会话失败");
+      sendDisabled.value = false;
+      return;
+    }
+  }
+
   let urlSearchParams = new URLSearchParams({
         question: myQuestion,
-        parentId: currentChatId.value,
-        username: username.value
+        session_id: sessionId.value,
+        user_id: username.value
   })
   let es = new EventSource("http://localhost:8000/chat/chat?" + urlSearchParams.toString())
   let s = "";
   es.onmessage = (event) => {
-    let data = JSON.parse(event.data).content;
-    if (data === "DONE"){
+    // 后端 SSE 协议：{ data: 片段内容, done: 是否结束 }
+    let parsed = JSON.parse(event.data);
+    let data = parsed.data;
+    if (parsed.done){
+      if (data) {
+        s += data;
+        messages.value[messages.value.length - 1].content = s;
+      }
       es.close();
       sendDisabled.value = false;
       saveConversation(myQuestion, s);
@@ -237,6 +271,11 @@ function chat() {
       s += data;
       messages.value[messages.value.length - 1].content = s;
     }
+  };
+  es.onerror = () => {
+    es.close();
+    sendDisabled.value = false;
+    ElMessage.error("连接异常，请重试");
   };
 }
 
@@ -252,6 +291,8 @@ function selectHistory(historyId) {
     }
   }).then(res => {
     messages.value = res.data.data;
+    // 恢复后端会话上下文，使后续对话接上历史
+    sessionId.value = res.data.session_id || "";
   })
 }
 // ==================== 保存聊天记录功能 ====================
@@ -264,6 +305,7 @@ function saveConversation(question, answer) {
       username: username.value,
       parentId: currentChatId.value,
       answer: answer,
+      sessionId: sessionId.value,
     })
   }).then(res => {
     if(currentChatId.value === 0){
@@ -276,6 +318,7 @@ function saveConversation(question, answer) {
 function createNewChat() {
   messages.value = [];
   currentChatId.value = 0;
+  sessionId.value = "";
 }
 // ==================== 删除聊天记录 ====================
 function deleteHistory(historyId) {

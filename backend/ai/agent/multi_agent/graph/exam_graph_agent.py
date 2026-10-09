@@ -28,7 +28,7 @@ class ExamGraphAgent:
     def __init__(self, checkpoint):
         self.memory = checkpoint
         # 获取redis实例
-        self.redis = redis_util.load_redis_conn()
+        self.redis = redis_util.get_redis_conn()
         self.agent = self.get_agent()
 
     # 构建图
@@ -63,8 +63,8 @@ class ExamGraphAgent:
         if self.redis:
             # 定义要存的数据，存入user_id 和 创建时间
             data = {"user_id": user_id, "create_time": time.time()}
-            # 存入,过期时间是1天
-            await self.redis.set(key, json.dumps(data), ex=60 * 60 * 24)
+            # 存入,过期时间是1天（同步 redis，放到线程中执行，避免阻塞事件循环）
+            await asyncio.to_thread(self.redis.set, key, json.dumps(data), ex=60 * 60 * 24)
         return key
     """
     检查会话： 会话id 是否创建 和 会话是否归属该用户
@@ -72,8 +72,8 @@ class ExamGraphAgent:
     async def check_session(self, user_id, session_id):
         print(f"检查会话,会id:{session_id}")
         if session_id:
-            # 获取会话数据
-            data = await self.redis.get(session_id)
+            # 获取会话数据（同步 redis，放到线程中执行）
+            data = await asyncio.to_thread(self.redis.get, session_id)
             print(f"是否有会话:{data}")
             # 检查会话是否是该用户创建的或者是伪造的
             if not data:
@@ -99,50 +99,47 @@ class ExamGraphAgent:
         if not ok:
             yield reason
             return
-        # -----------------------添加记忆-------------------------
-        # 创建会话管理器
-        session_manager = SessionManager(session_id, user_id)
-        # 添加窗口记忆
-        await session_manager.save("user", question)
-        # 构建记忆的提示词
-        memory_prompt = await session_manager.build_prompt(user_id, question)
-        # print("添加记忆")
-
         # 记录AI答案
         ai_answer = ""
-        # ------------------------------------------------
-        # 构建用户问题
-        user_msg = {"messages": [memory_prompt, HumanMessage(content=question)]}
-        # user_msg ={"messages":[HumanMessage(content=question)]}
-        # 配置检测点
-        config = {"configurable": {"thread_id": session_id}}
-
+        session_manager = None
+        # -----------------------添加记忆 + 流式对话-------------------------
         try:
+            # 创建会话管理器
+            session_manager = SessionManager(session_id, user_id)
+            # 添加窗口记忆
+            await session_manager.save("user", question)
+            # 构建记忆的提示词
+            memory_prompt = await session_manager.build_prompt(user_id, question)
+
+            # 构建用户问题
+            user_msg = {"messages": [memory_prompt, HumanMessage(content=question)]}
+            # 配置检测点
+            config = {"configurable": {"thread_id": session_id}}
+
             async with self._session_lock(session_id):
                 print(f"开始处理会话:{session_id}")
-                # 采用异步流式
-                async for c, m in self.agent.astream(user_msg, config, stream_mode=["messages", "custom"]):
-                    if c == "messages":
-                        messages, meta = m
-
-                        if messages.content:
-                            # 累加
-                            ai_answer += messages.content
-                            yield messages.content
-                    else:
-                        # 累加
-                        ai_answer += m
-                        yield m
+                # 采用异步流式（只订阅 custom 流，避免 messages 流透传内层 agent 的 LLM chunk 导致重复输出）
+                async for c, m in self.agent.astream(user_msg, config, stream_mode=["custom"]):
+                    # 累加
+                    ai_answer += m
+                    yield m
             print(f"AI回复:{ai_answer}")
         except Exception as e:
+            import traceback
             print(f"错误:{e}")
+            traceback.print_exc()
             yield str(e)
         # ---------------------更新记忆---------------------------
-        # 添加AI回复的记忆
-        await session_manager.save("ai", ai_answer)
-        # 更新记忆
-        memory_manger = MemoryManager(session_manager)
-        await memory_manger.update(user_id, question)
+        # 添加AI回复的记忆 + 更新记忆（失败不影响已流式输出的回复）
+        if session_manager is not None:
+            try:
+                await session_manager.save("ai", ai_answer)
+                memory_manger = MemoryManager(session_manager)
+                await memory_manger.update(user_id, question)
+            except Exception as e:
+                import traceback
+                print(f"更新记忆错误:{e}")
+                traceback.print_exc()
         # ------------------------------------------------
 
     """
@@ -156,7 +153,8 @@ class ExamGraphAgent:
         token = uuid.uuid4().hex
         # 尝试获取锁， px=60 * 1000 表示锁的过期时间，单位毫秒
         # nx=True 是 Redis SET 命令的一个选项，意思是：只有当这个 key 不存在时，才设置成功
-        ok = await self.redis.set(key, token, nx=True, px=5*60 * 1000)
+        # 同步 redis，放到线程中执行，避免阻塞事件循环
+        ok = await asyncio.to_thread(self.redis.set, key, token, nx=True, px=5*60 * 1000)
         # 获取锁成功，执行 yield 语句块中的代码
         if not ok:
             raise RuntimeError("会话忙，请稍后再试")
@@ -175,8 +173,8 @@ class ExamGraphAgent:
             end
             """
             try:
-                # 执行 Lua 脚本，释放锁
-                await self.redis.eval(lua, 1, key, token)
+                # 执行 Lua 脚本，释放锁（同步 redis，放到线程中执行）
+                await asyncio.to_thread(self.redis.eval, lua, 1, key, token)
             except Exception:
                 pass
 

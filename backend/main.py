@@ -7,9 +7,9 @@ from langgraph.checkpoint.memory import InMemorySaver
 
 from backend.ai.agent.multi_agent.graph.exam_graph_agent import ExamGraphAgent
 from backend.chat.controller.chat_router import chat_router
+from backend.chat.controller.history_router import history_router
 from backend.users.controller.account_router import account_router
 from backend.users.controller.email_router import email_router
-
 
 
 # 生命周期加载模型
@@ -26,7 +26,7 @@ app = FastAPI(lifespan=get_model)
 # 跨域配置
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,6 +34,8 @@ app.add_middleware(
 
 # 注册子路由
 app.include_router(chat_router, prefix="/chat")
+
+app.include_router(history_router, prefix="/history")
 
 app.include_router(email_router, prefix="/email")
 

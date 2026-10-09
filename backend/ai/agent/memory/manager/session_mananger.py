@@ -1,3 +1,4 @@
+from langchain_core.messages import SystemMessage
 from backend.ai.agent.memory.save.window_memory import WindowMemory
 from backend.ai.agent.memory.save.summary_memory import SummaryMemory
 from backend.ai.agent.memory.manager.prompt_builder import PromptBuilder
@@ -18,14 +19,10 @@ class SessionManager:
         # self.agent = SummaryAgent(elf.summary_memory )
 
     # 添加窗口记忆
-    def save(self, role: str, content: str):
-        self.window_memory.save(role, content)
+    async def save(self, role: str, content: str):
+        await self.window_memory.save(role, content)
 
     # 构建提示词
-    def build_prompt(self, user_id, question):
-        prompt = self.prompt_builder.builder_prompt(user_id, question)
-        return {"role": "system", "content": prompt}
-
-
-
-
+    async def build_prompt(self, user_id, question):
+        prompt = await self.prompt_builder.builder_prompt(user_id, question)
+        return SystemMessage(content=prompt)

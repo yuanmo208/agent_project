@@ -17,13 +17,22 @@ class MemoryManager:
         # 创建用户画像智能体
         self.profile_agent = ProfileAgent(sessionManger.profile_memory)
 
-    def update(self, user_id, question):
+    async def update(self, user_id, question):
         # 获取查询的窗口记忆
-        query_window = self.window_memory.query()
+        query_window = await self.window_memory.query()
         # 更新长期记忆
-        self.long_agent.update(user_id, question)
+        try:
+            await self.long_agent.update(user_id, question)
+        except Exception as e:
+            print(f"长期记忆更新失败: {e}")
         # 更新用户画像记忆
-        self.profile_agent.update(question)
+        try:
+            await self.profile_agent.update(question)
+        except Exception as e:
+            print(f"画像记忆更新失败: {e}")
 
-        if len(self.window_memory.query()) >= 2:
-            self.summary_agent.update(query_window)
+        if len(query_window) >= 2:
+            try:
+                await self.summary_agent.update(query_window)
+            except Exception as e:
+                print(f"摘要记忆更新失败: {e}")

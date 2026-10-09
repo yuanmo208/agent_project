@@ -42,3 +42,7 @@ def insert_mysql_email(email, password):
         return False
     finally:
         MySQLManage.close_mysql_conn(cur, conn)
+
+if __name__ == '__main__':
+    rs = query_mysql_email("1026473161@qq.com")
+    print(rs)

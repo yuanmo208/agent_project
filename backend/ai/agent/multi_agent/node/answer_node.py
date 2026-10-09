@@ -1,4 +1,5 @@
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage
+from langgraph.config import get_stream_writer
 
 from backend.ai.agent.multi_agent.state.exam_state import ExamState
 
@@ -37,13 +38,13 @@ def answer_node(state: ExamState):
             print("所有题目已答完，进入评价")
             # 下一个节点是评价
             continue_question = False
+        # 通过 custom 流输出确认信息（避免 messages 流重复）
+        get_stream_writer()("\n答案已经记录\n")
         return {
-            "messages": [AIMessage(content="\n答案已经记录\n")],
             "user_answer_list": user_answer_list,
             "exam_step": "answer",
             "continue_question": continue_question
         }
     else:
-        return {
-            "messages": [AIMessage(content="\n不是用户输入\n")],
-        }
+        get_stream_writer()("\n不是用户输入\n")
+        return {}

@@ -4,6 +4,7 @@ from langchain_core.messages import HumanMessage
 from backend.ai.model.my_model import ModelManage
 from backend.ai.agent.memory.save.profile_memory import ProfileMemory
 from pydantic import BaseModel,Field
+import ast
 
 class ProfileParams(BaseModel):
     name:str = Field( description="姓名")
@@ -36,13 +37,13 @@ class ProfileAgent:
                   4、使用第三人称描述
                   5、不要做总结，只记录重要信息即可
                   6、如果没有用户画像信息，就返回空
-                
+
            四:输出
                 - 输出的用户画像信息
-           五:示例：
+           五：示例：
                  用户输入：我喜欢打游戏
                  输出:{'name': '', 'age': 0, 'job': '', 'address': '', 'xueli': ''}
-                 
+
                  用户输入：我是张三
                  输出:{'name': '张三', 'age': 0, 'job': '', 'address': '', 'xueli': ''}
         """
@@ -54,20 +55,28 @@ class ProfileAgent:
             system_prompt=self.prompt,
             tools=[],
             debug=True,
-            response_format=ProfileParams
         )
         return self.agent
 
     # 记忆更新
-    def update(self, question):
+    async def update(self, question):
         # 提问
-        rs = self.agent.invoke({"messages": [HumanMessage(content=question)]})
-        data = rs["structured_response"].model_dump()
-        #print(data)
-        #查询出是否有新的画像信息
-        for key,value in data.items():
+        rs = await self.agent.ainvoke(
+            {"messages": [HumanMessage(content=question)]},
+            config={"recursion_limit": 5}
+        )
+        # 模型返回纯文本字典字符串，直接解析
+        content = rs["messages"][-1].content
+        try:
+            data = ast.literal_eval(content)
+        except Exception:
+            return  # 无法解析，跳过
+        if not isinstance(data, dict):
+            return
+        # 保存非空值
+        for key, value in data.items():
             if value:
-                self.profile_memory.save(key,value)
+                await self.profile_memory.save(key, value)
 
 if __name__ == "__main__":
     Long_memory =  ProfileMemory(1)
@@ -77,11 +86,3 @@ if __name__ == "__main__":
     q3="我是李四"
     q4="我今年24岁"
     agent.update( q2)
-
-
-
-
-
-
-
-

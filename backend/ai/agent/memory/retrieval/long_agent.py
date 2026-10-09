@@ -39,17 +39,20 @@ class LongAgent:
             model=self.model,
             system_prompt=self.prompt,
             tools=[],
-            debug=True
+            debug=True,
 
         )
         return self.agent
 
     # 记忆更新
-    def update(self, user_id, question):
+    async def update(self, user_id, question):
         # 提问
-        rs = self.agent.invoke({"messages": [HumanMessage(content=question)]})
+        rs = await self.agent.ainvoke(
+            {"messages": [HumanMessage(content=question)]},
+            config={"recursion_limit": 5}
+        )
         # 把新摘要存入到摘要记忆中
-        self.long_memory.save(user_id,rs["messages"][-1].content)
+        await self.long_memory.save(user_id,rs["messages"][-1].content)
 
 
 if __name__ == "__main__":

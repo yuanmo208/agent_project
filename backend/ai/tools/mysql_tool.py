@@ -23,7 +23,7 @@ def mysql_tool(sql: str) -> str:
         port = os.getenv("DB_PORT")
         user = os.getenv("DB_USER")
         password = os.getenv("DB_PASSWORD")
-        db_name = os.getenv("DB_NAME")
+        db_name = os.getenv("DB_NAME") or os.getenv("DB_DATABASE")
         if not host or not port or not user or not password or not db_name:
             return "数据库连接参数未配置"
 

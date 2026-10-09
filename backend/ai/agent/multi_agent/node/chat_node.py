@@ -60,7 +60,7 @@ async def chat_node(state:ExamState):
             if c.content:
                 result.append(c.content)
                 write(c.content)
-        ai_msg = ""
+        ai_msg = "".join(result)
         return {"messages": [AIMessage(content=ai_msg)], "exam_step": "done"}
     except Exception as e:
         print("=====大模型兜底=====")
@@ -78,8 +78,9 @@ async def chat_node(state:ExamState):
                 if c.content:
                     result.append(c.content)
                     write(c.content)
-            ai_msg = ""
-            return {"messages": [AIMessage(content=ai_msg)], "exam_step": "done"}
+            ai_msg = "".join(result)
+            # 内容已通过 write 写入 custom 流，这里不再返回 messages，避免与 messages 流重复输出
+            return {"exam_step": "done"}
         except Exception as e:
             print("=====超时=====")
             return {"messages": [AIMessage(content="\n请求超时，请重新再试\n")], "exam_step": "done"}

@@ -16,10 +16,11 @@ rule:
   - 表达分析必须，，评估语速、清晰度、自信度等表达表现
   - 综合报告生成必须，给出学生整体表现的综合评价，包括优势、劣势和学习建议
 output:
-  - 请严格使用 Markdown 格式输出
+  - 请严格使用 Markdown 格式输出，必须使用中文
   - 需要输出两类内容：内容分析、表达能力分析,综合报告生成
-  - 逐题评分字段包含：question（题目原文）、tech_score（技术正确性）、depth_score（知识深度）、expression_score（表达能力）、total_score（总分）
-  - 整体评价字段包含：advantages（优势）、disadvantages（劣势）、suggestions（学习建议）
+  - 逐题评分字段包含：题目（题目原文）、技术正确性（满分60）、知识深度（满分25）、表达能力（满分15）、总分（满分100）
+  - 整体评价字段包含：优势、劣势、学习建议
+  - 所有字段名和内容必须使用中文，不要出现 tech_score、depth_score、expression_score、total_score、advantages、disadvantages、suggestions 等英文字段名
 example:
   - 用户输入 python的基本数据类型有哪些
   - 输入 xxxx
